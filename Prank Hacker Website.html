@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prank Hacker Website</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden; /* Prevent scrollbars during animation */
+            font-family: monospace;
+            background-color: #000;
+            color: #0f0; /* Green text */
+        }
+
+        /* Terminal Container and Interface */
+        .terminal-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        #terminal {
+            background-color: #000;
+            border: 2px solid #0f0;
+            padding: 20px;
+            width: 80%;
+            max-width: 800px; /* Limit terminal width */
+            box-shadow: 0 0 20px #0f0; /* Glowing effect */
+            position: relative; /* For glitch effect positioning */
+        }
+
+        #terminal-output {
+            min-height: 150px; /* Minimum output area height */
+            margin-bottom: 10px;
+            overflow-y: auto; /* Scroll if content overflows */
+            white-space: pre-wrap; /* Preserve formatting and wrap text */
+        }
+
+        #terminal-input {
+            display: flex;
+            align-items: center;
+        }
+
+        .prefix {
+            color: #0f0;
+            margin-right: 5px;
+        }
+
+        #input-text {
+            flex-grow: 1;
+            background: none;
+            border: none;
+            color: #0f0;
+            outline: none; /* Remove focus outline */
+            caret-color: #0f0; /* Cursor color */
+            white-space: nowrap; /* Prevent wrapping input text */
+            overflow: hidden; /* Hide overflowed input */
+        }
+
+        .cursor {
+            display: inline-block;
+            background-color: #0f0;
+            width: 8px;
+            height: 1em;
+            vertical-align: text-bottom;
+            animation: blink-cursor 0.8s step-end infinite;
+        }
+
+        @keyframes blink-cursor {
+            from, to { background-color: transparent; }
+            50% { background-color: #0f0; }
+        }
+
+        /* Loading Bar */
+        #loading-bar-container {
+            width: 80%;
+            max-width: 800px;
+            height: 10px;
+            background-color: #333;
+            margin-top: 10px;
+            border-radius: 5px;
+            overflow: hidden; /* Clip overflow to create rounded ends effect */
+            display: none; /* Hidden by default */
+        }
+
+        #loading-bar {
+            height: 100%;
+            width: 0%;
+            background-color: #0f0;
+            border-radius: 5px;
+            animation: loading 2s linear infinite; /* Example loading animation, adjust as needed */
+        }
+
+        @keyframes loading {
+            0% { width: 0%; }
+            100% { width: 100%; } /* Adjust to desired loading speed */
+        }
+
+
+        /* Start Hack Button */
+        #start-hack-btn {
+            padding: 10px 20px;
+            background-color: #0f0;
+            color: #000;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 1em;
+            transition: background-color 0.3s ease; /* Smooth hover effect */
+        }
+
+        #start-hack-btn:hover {
+            background-color: #0a0;
+        }
+
+        /* Hidden Class (Utility) */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Hacking Process Section */
+        #hacking-process {
+            position: fixed; /* Overlay the entire screen */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9); /* Dark semi-transparent background */
+            color: #0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10; /* Ensure it's on top of other content */
+        }
+
+        #hacking-progress-bar-container {
+            width: 80%;
+            max-width: 600px;
+            height: 15px;
+            background-color: #333;
+            margin-bottom: 20px;
+            border-radius: 7px;
+            overflow: hidden;
+            position: relative; /* For progress text positioning */
+        }
+
+        #hacking-progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: #0f0;
+            border-radius: 7px;
+            animation: hacking-progress 10s linear forwards; /* Adjust duration */
+        }
+
+        @keyframes hacking-progress {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+
+        #hacking-progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #fff; /* White progress text for better visibility */
+            font-size: 0.9em;
+        }
+
+
+        #hacking-log {
+            min-height: 100px;
+            max-height: 200px; /* Limit log height to prevent overwhelming the screen */
+            width: 80%;
+            max-width: 600px;
+            background-color: rgba(0, 0, 0, 0.5); /* Slightly transparent log background */
+            padding: 15px;
+            border: 1px solid #0f0;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            overflow-y: auto; /* Scrollable log area */
+            white-space: pre-wrap;
+            font-size: 0.8em;
+        }
+
+        /* Matrix Rain Canvas */
+        #matrix-rain {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1; /* Place matrix rain behind other content */
+        }
+
+
+        /* Virus Pop-up */
+        #virus-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #f00; /* Red background for warning */
+            color: #fff; /* White text on red */
+            border: 3px solid #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 30px #f00; /* Red glow effect */
+            z-index: 20; /* Ensure it's on top of everything */
+            animation: popup-entrance 0.5s ease-out forwards; /* Entrance animation */
+        }
+
+        @keyframes popup-entrance {
+            0% { opacity: 0; transform: translate(-50%, -60%); }
+            100% { opacity: 1; transform: translate(-50%, -50%); }
+        }
+
+
+        .popup-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Center content within popup */
+        }
+
+        .popup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #fff;
+            padding-bottom: 5px;
+        }
+
+        .popup-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            text-shadow: 0 0 5px #fff; /* White text shadow for emphasis */
+        }
+
+        #popup-close-btn {
+            background-color: #fff;
+            color: #f00;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 15px;
+            cursor: pointer;
+            font-family: monospace;
+            font-size: 1em;
+            transition: transform 0.2s ease, background-color 0.2s ease; /* Button effects */
+        }
+
+        #popup-close-btn:hover {
+            background-color: #eee; /* Slightly lighter on hover */
+        }
+
+        /* Shake animation for pop-up */
+        #virus-popup.shake {
+            animation: popup-shake 0.8s cubic-bezier(.36,.07,.19,.97) both;
+            cursor: pointer; /* Indicate it's interactive when shaking */
+        }
+
+        @keyframes popup-shake {
+          10%, 90% {
+            transform: translate3d(-1px, 0, 0) translate(-50%, -50%);
+          }
+
+          20%, 80% {
+            transform: translate3d(2px, 0, 0) translate(-50%, -50%);
+          }
+
+          30%, 50%, 70% {
+            transform: translate3d(-4px, 0, 0) translate(-50%, -50%);
+          }
+
+          40%, 60% {
+            transform: translate3d(4px, 0, 0) translate(-50%, -50%);
+          }
+        }
+
+        /* Move away close button */
+        #popup-close-btn.move-away {
+            position: relative; /* For relative positioning within popup */
+            animation: move-close-button 0.4s ease-out forwards;
+        }
+
+        @keyframes move-close-button {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(30px); opacity: 0; visibility: hidden; } /* Move down and fade out */
+        }
+
+
+        .popup-body {
+            text-align: center;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        .popup-body b {
+            font-size: 1.4em; /* Emphasize "CALL SUPPORT" */
+            color: #ff0; /* Yellow color for "CALL SUPPORT" */
+            text-shadow: 0 0 3px #ff0; /* Yellow shadow for stronger emphasis */
+        }
+
+
+        /* Screen Crack Effect */
+        #screen-crack {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('screen-crack.png'); /* Replace with your crack image */
+            background-size: cover;
+            background-position: center;
+            pointer-events: none; /* Make it non-interactive so clicks pass through */
+            opacity: 0; /* Initially transparent */
+            z-index: 30; /* Above pop-up */
+        }
+
+        #screen-crack.crack-animation {
+            animation: screen-crack-fade 1s steps(1) forwards; /* Fade-in animation */
+        }
+
+        @keyframes screen-crack-fade {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+
+        /* Easter Egg */
+        #easter-egg {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #0f0;
+            padding: 30px;
+            border: 2px solid #0f0;
+            border-radius: 10px;
+            z-index: 40; /* Above screen crack and everything else */
+            text-align: center;
+            font-size: 1.2em;
+            box-shadow: 0 0 40px #0f0;
+            animation: easter-egg-entrance 0.5s ease-out forwards; /* Entrance animation */
+        }
+
+        @keyframes easter-egg-entrance {
+            0% { opacity: 0; transform: translate(-50%, -60%) scale(0.8); }
+            100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+
+
+        /* Glitch Effect (General - can be applied to elements) */
+        .glitch {
+            position: relative;
+        }
+
+        .glitch::before,
+        .glitch::after {
+            content: attr(data-text); /* Use data-text attribute for glitch text */
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: inherit;
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+            opacity: 0.8; /* Adjust opacity of glitch layers */
+            pointer-events: none; /* Ensure glitch layers don't interfere with interaction */
+        }
+
+        .glitch::before {
+            left: 2px;
+            text-shadow: -1px 0 red;
+            clip-path: polygon(0 0, 100% 0, 100% 33%, 0 33%); /* Example clip path for glitch effect */
+            animation: glitch-anim-before 2s infinite linear alternate-reverse; /* Glitch animation */
+        }
+
+        .glitch::after {
+            left: -2px;
+            text-shadow: 1px 0 blue;
+            clip-path: polygon(0 67%, 100% 67%, 100% 100%, 0 100%); /* Example clip path */
+            animation: glitch-anim-after 2s infinite linear alternate-reverse; /* Glitch animation */
+        }
+
+
+        @keyframes glitch-anim-before {
+            0%     { clip-path: polygon(0 0, 100% 0, 100% 33%, 0 33%);    transform: translate(-1px, -2px); }
+            10%    { clip-path: polygon(0 0, 100% 0, 100% 33%, 0 33%);    transform: translate(-1px, 2px);  }
+            20%    { clip-path: polygon(0 0, 100% 0, 100% 33%, 0 33%);    transform: translate(1px, 1px);   }
+            30%    { clip-path: polygon(0 0, 100% 0, 100% 33%, 0 33%);    transform: translate(-1px, -1px); }
+            40%    { clip-path: polygon(0 34%, 100% 34%, 100% 66%, 0 66%);  transform: translate(-1px, 0px);  }
+            50%    { clip-path: polygon(0 34%, 100% 34%, 100% 66%, 0 66%);  transform: translate(1px, -2px); }
+            60%    { clip-path: polygon(0 34%, 100% 34%, 100% 66%, 0 66%);  transform: translate(1px, 2px);  }
+            70%    { clip-path: polygon(0 67%, 100% 67%, 100% 100%, 0 100%); transform: translate(2px, 1px);   }
+            80%    { clip-path: polygon(0 67%, 100% 67%, 100% 100%, 0 100%); transform: translate(-2px, 1px); }
+            90%    { clip-path: polygon(0 67%, 100% 67%, 100% 100%, 0 100%); transform: translate(-2px, -2px); }
+            100%   { clip-path: polygon(0 67%, 100% 67%, 100% 100%, 0 100%); transform: translate(0, -2px);  }
+        }
+
+
+        @keyframes glitch-anim-after {
+            0%     { clip-path: polygon(0 67%, 100% 67%, 100% 100%, 0 100%); transform: translate(1px, 1px);   }
+            10%    { clip-path: polygon(0 67%, 100% 67%, 100% 100%, 0 100%); transform: translate(-1px, -1px); }
+            20%    { clip-path: polygon(0 67%, 100% 67%, 100% 100%, 0 100%); transform: translate(-2px, 1px); }
+            30%    { clip-path: polygon(0 67%, 100% 67%, 100% 100%, 0 100%); transform: translate(0px, 2px);  }
+            40%    { clip-path: polygon(0 34%, 100% 34%, 100% 66%, 0 66%);  transform: translate(-2px, 2px); }
+            50%    { clip-path: polygon(0 34%, 100% 34%, 100% 66%, 0 66%);  transform: translate(1px, 2px);   }
+            60%    { clip-path: polygon(0 34%, 100% 34%, 100% 66%, 0 66%);  transform: translate(2px, 2px);   }
+            70%    { clip-path: polygon(0 0, 100% 0, 100% 33%, 0 33%);    transform: translate(2px, 2px);   }
+            80%    { clip-path: polygon(0 0, 100% 0, 100% 33%, 0 33%);    transform: translate(2px, -2px); }
+            90%    { clip-path: polygon(0 0, 100% 0, 100% 33%, 0 33%);    transform: translate(2px, 2px);   }
+            100%   { clip-path: polygon(0 0, 100% 0, 100% 33%, 0 33%);    transform: translate(1px, -2px); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="terminal-container">
+        <div id="terminal">
+            <div id="terminal-output"></div>
+            <div id="terminal-input">
+                <span class="prefix">C:\></span><span id="input-text" contenteditable="true"></span><span class="cursor">█</span>
+            </div>
+        </div>
+        <div id="loading-bar-container">
+            <div id="loading-bar"></div>
+        </div>
+        <button id="start-hack-btn">Start Hack</button>
+    </div>
+
+    <div id="hacking-process" class="hidden">
+        <div id="hacking-progress-bar-container">
+            <div id="hacking-progress-bar"></div>
+            <span id="hacking-progress-text">Hacking in progress...</span>
+        </div>
+        <div id="hacking-log"></div>
+        <canvas id="matrix-rain"></canvas>
+    </div>
+
+    <div id="virus-popup" class="hidden">
+        <div class="popup-content">
+            <div class="popup-header">
+                <span class="popup-title">WARNING! SYSTEM HACKED!</span>
+                <button id="popup-close-btn">Close</button>
+            </div>
+            <div class="popup-body">
+                <p>Your system has been compromised! Immediate action is required.</p>
+                <p><b>CALL SUPPORT IMMEDIATELY!</b></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-crack" class="hidden"></div>
+    <audio id="alarm-sound" src="alarm.mp3"></audio> <audio id="beep-sound" src="beep.mp3"></audio>   <div id="easter-egg" class="hidden">
+        <p>Congratulations! You are now a hacker!</p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const terminalOutput = document.getElementById('terminal-output');
+            const inputTextElement = document.getElementById('input-text');
+            const loadingBarContainer = document.getElementById('loading-bar-container');
+            const loadingBar = document.getElementById('loading-bar');
+            const startHackBtn = document.getElementById('start-hack-btn');
+            const terminalContainer = document.querySelector('.terminal-container');
+            const hackingProcessSection = document.getElementById('hacking-process');
+            const hackingProgressBar = document.getElementById('hacking-progress-bar');
+            const hackingLog = document.getElementById('hacking-log');
+            const matrixCanvas = document.getElementById('matrix-rain');
+            const virusPopup = document.getElementById('virus-popup');
+            const popupCloseBtn = document.getElementById('popup-close-btn');
+            const screenCrack = document.getElementById('screen-crack');
+            const alarmSound = document.getElementById('alarm-sound');
+            const beepSound = document.getElementById('beep-sound');
+            const easterEgg = document.getElementById('easter-egg');
+
+            let terminalText = [
+                "Initializing systems...",
+                "Scanning network...",
+                "Bypassing firewall...",
+                "Accessing secure servers...",
+                "Downloading critical data...",
+                "Encryption keys retrieved...",
+                "Hack in progress... ", // Added space to see cursor blinking better after this line
+            ];
+            let textIndex = 0;
+            let charIndex = 0;
+            let typingSpeed = 50; // Adjust typing speed (milliseconds)
+            let logIndex = 0;
+            let logInterval;
+            let hackingInterval;
+            let clickCount = 0;
+
+            // Function to type text in the terminal
+            function typeText() {
+                if (textIndex < terminalText.length) {
+                    if (charIndex < terminalText[textIndex].length) {
+                        terminalOutput.innerHTML += terminalText[textIndex].charAt(charIndex);
+                        charIndex++;
+                        setTimeout(typeText, typingSpeed);
+                    } else {
+                        terminalOutput.innerHTML += '<br>'; // New line after each sentence
+                        textIndex++;
+                        charIndex = 0;
+                        if (textIndex === 1) { // Start loading bar after "Initializing systems..."
+                            startLoadingBar();
+                        } else if (textIndex === terminalText.length) { // After last line, show start button
+                            setTimeout(() => {
+                                loadingBarContainer.style.display = 'none'; // Hide loading bar
+                                startHackBtn.style.display = 'block'; // Show start button
+                                startHackBtn.classList.add('glitch'); // Apply glitch effect
+                                startHackBtn.setAttribute('data-text', 'Start Hack'); // Set data-text for glitch
+                            }, 500); // Delay before showing button
+                        } else {
+                            setTimeout(typeText, typingSpeed * 5); // Little pause after each line
+                        }
+                    }
+                }
+            }
+
+            // Loading bar animation
+            function startLoadingBar() {
+                loadingBarContainer.style.display = 'block';
+                loadingBar.style.width = '0%';
+                let progress = 0;
+                let interval = setInterval(() => {
+                    progress += 1; // Adjust increment for speed
+                    loadingBar.style.width = progress + '%';
+                    if (progress >= 100) {
+                        clearInterval(interval);
+                        setTimeout(() => {
+                            loadingBarContainer.style.display = 'none'; // Hide loading bar after complete
+                            typeText(); // Continue typing next lines after loading bar
+                        }, 500); // Little delay after loading bar finishes
+                    }
+                }, 20); // Interval for loading bar update (adjust for speed)
+            }
+
+            // Function to generate fake hacking logs
+            function generateLog() {
+                const logMessages = [
+                    "Attempting to bypass firewall...",
+                    "Firewall breached!",
+                    "Scanning for vulnerabilities...",
+                    "Vulnerability found: CVE-2023-XXXX",
+                    "Exploiting vulnerability...",
+                    "Injecting malicious payload...",
+                    "Payload execution successful.",
+                    "Accessing database...",
+                    "Downloading sensitive data...",
+                    "Data encrypted and exfiltrated.",
+                    "Cleaning up logs...",
+                    "Hack completed. Access Granted.", //Fake Access Granted Log
+                    "Firewall re-enabled. System secured.", //Fake System Secured Log
+                    "Warning! Intrusion detected!", //Fake Intrusion Warning Log
+                    "Analyzing system defenses...", //Fake Defense Analysis Log
+                    "Initiating brute-force attack...", //Fake Brute-force Attack Log
+                    "Password cracking in progress...", //Fake Password Cracking Log
+                    "Admin password cracked: ************", //Fake Password Cracked Log
+                    "User accounts compromised.", //Fake Account Compromise Log
+                    "System files corrupted.", //Fake System File Corruption Log
+                    "Deploying ransomware...", //Fake Ransomware Deployment Log
+                    "Demand payment for data recovery.", //Fake Ransom Demand Log
+                    "Establishing backdoor access...", //Fake Backdoor Access Log
+                    "Maintaining persistent access.", //Fake Persistent Access Log
+                    "Data breach confirmed.", //Fake Data Breach Confirmation Log
+                    "Confidential information exposed.", //Fake Confidential Info Exposed Log
+                    "System integrity compromised.", //Fake System Integrity Compromise Log
+                    "Critical infrastructure targeted.", //Fake Critical Infra Target Log
+                    " 국가 배후 해킹 조직 활동 포착 ", // Fake Korean Backdoor Alert - Fun extra!
+                    "[SYSTEM ALERT] Unauthorized access attempt blocked.", // Fake System Alert Blocked
+                    "[SECURITY] Potential phishing attack detected and neutralized.", // Fake Phishing Alert
+                    " 통신망 침입 시도 감지됨 ", // Fake Korean Network Intrusion - Fun extra!
+                    "[INFO] Network traffic analysis initiated...", // Fake Network Traffic Analysis
+                    " 침입자 IP 추적 중 ", // Fake Korean IP Tracking - Fun extra!
+                    "[WARNING] Suspicious activity originating from external IP: 192.168.1.100", // Fake Suspicious IP Warning
+                    "[CRITICAL] Data exfiltration detected. Source IP: [REDACTED]", // Fake Data Exfiltration Critical
+                    " 방화벽 규칙 업데이트 중... ", // Fake Korean Firewall Update - Fun extra!
+                    "[NOTICE] Security patches being applied to system...", // Fake Security Patch Notice
+                    " 백신 프로그램 활성화됨 ", // Fake Korean Anti-virus Active - Fun extra!
+                    "[SCAN] Full system scan initiated. Estimated time: 30 minutes.", // Fake System Scan
+                    "[REPORT] Scan completed. No threats detected. System secure.", // Fake Scan Complete Secure
+                    "[ERROR] System instability detected. Investigating...", // Fake System Instability Error
+                    " 시스템 오류 발생 ", // Fake Korean System Error - Fun extra!
+                    "[DEBUG] Running diagnostics... Please wait...", // Fake Debug Diagnostics
+                    " 진단 결과: 시스템 정상 ", // Fake Korean Diagnostic Result - Fun extra!
+                    "[MAINTENANCE] System maintenance in progress. Please do not power off.", // Fake Maintenance
+                    " 서버 점검 중... ", // Fake Korean Server Check - Fun extra!
+                    "[SHUTDOWN] System preparing for emergency shutdown...", // Fake Emergency Shutdown
+                    " 긴급 시스템 종료 ", // Fake Korean Emergency Shutdown - Fun extra!
+                    "[REBOOT] System reboot initiated...", // Fake System Reboot
+                    " 시스템 재시작 중 ", // Fake Korean System Reboot - Fun extra!
+                ];
+
+                if (logIndex < logMessages.length) {
+                    hackingLog.innerHTML += `<span class="log-line">${logMessages[logIndex]}</span><br>`;
+                    logIndex++;
+                    hackingLog.scrollTop = hackingLog.scrollHeight; // Auto-scroll to bottom
+                } else {
+                     clearInterval(logInterval); // Stop log generation after all messages
+                     setTimeout(showVirusPopup, 1000); // Show virus popup after logs finish
+                }
+            }
+
+
+            // Matrix Rain animation setup
+            function setupMatrixRain() {
+                const ctx = matrixCanvas.getContext('2d');
+                matrixCanvas.width = window.innerWidth;
+                matrixCanvas.height = window.innerHeight;
+
+                const katakana = "ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜｦﾝ";
+                const latin = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+                const nums = "0123456789";
+                const alphabet = katakana + latin + nums;
+
+                const fontSize = 16;
+                const columns = matrixCanvas.width / fontSize;
+                const drops = [];
+
+                for (let x = 0; x < columns; x++) {
+                    drops[x] = 1;
+                }
+
+                function drawMatrix() {
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.04)'; // Very transparent black for trails
+                    ctx.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height);
+
+                    ctx.fillStyle = '#0F0'; // Green color
+                    ctx.font = fontSize + 'px monospace';
+
+                    for (let i = 0; i < drops.length; i++) {
+                        const text = alphabet.charAt(Math.floor(Math.random() * alphabet.length));
+                        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                        if (drops[i] * fontSize > matrixCanvas.height && Math.random() > 0.975) {
+                            drops[i] = 0; // Reset a column to the top randomly
+                        }
+                        drops[i]++;
+                    }
+                }
+
+                function matrixAnimation() {
+                    drawMatrix();
+                    requestAnimationFrame(matrixAnimation);
+                }
+
+                matrixAnimation();
+            }
+
+
+            // Show virus popup
+            function showVirusPopup() {
+                virusPopup.classList.remove('hidden');
+                alarmSound.play();
+                virusPopup.classList.add('shake'); // Start shaking animation
+                setTimeout(() => {
+                    virusPopup.classList.remove('shake'); // Stop shaking after a while
+                }, 1000); // Shake for 1 second
+
+                // "Moving" close button prank
+                popupCloseBtn.addEventListener('mouseover', function() {
+                    popupCloseBtn.classList.add('move-away');
+                    setTimeout(() => {
+                        popupCloseBtn.classList.remove('move-away'); //Reset for next hover
+                    }, 400); //Duration of move-away animation (match CSS)
+                });
+
+                // Screen crack effect after popup is shown for a bit
+                setTimeout(() => {
+                    screenCrack.classList.remove('hidden');
+                    screenCrack.classList.add('crack-animation');
+                    beepSound.play(); // Play beep sound when crack appears
+                    setTimeout(() => {
+                        screenCrack.classList.remove('crack-animation'); //Crack disappear animation trigger
+                        screenCrack.classList.add('hidden'); // Optionally hide crack after animation
+
+                    }, 1000); // Duration of crack animation
+
+                }, 3000); // Delay before screen crack (3 seconds after popup)
+
+            }
+
+
+            // Event listener for "Start Hack" button
+            startHackBtn.addEventListener('click', () => {
+                startHackBtn.style.display = 'none'; // Hide button after click
+                terminalContainer.classList.add('hidden'); // Hide terminal interface
+                hackingProcessSection.classList.remove('hidden'); // Show hacking process section
+                hackingProgressBar.style.width = '0%'; // Reset progress bar
+                hackingLog.innerHTML = ''; // Clear previous logs
+                logIndex = 0; // Reset log index
+                hackingInterval = setInterval(generateLog, 200); // Start generating logs
+                setupMatrixRain(); // Start matrix rain animation
+            });
+
+
+            // Event listener for popup close button
+            popupCloseBtn.addEventListener('click', () => {
+                virusPopup.classList.add('hidden'); // Hide the popup
+                alarmSound.pause(); // Stop alarm sound
+                alarmSound.currentTime = 0; // Reset alarm sound to start
+            });
+
+
+            // Easter Egg - Click Counter
+            document.addEventListener('click', () => {
+                clickCount++;
+                if (clickCount >= 15) { //Trigger after 15 clicks anywhere on page
+                    easterEgg.classList.remove('hidden');
+                    setTimeout(() => {
+                        easterEgg.classList.add('hidden'); //Hide easter egg after some time
+                        clickCount = 0; //Reset counter to prevent immediate re-trigger
+                    }, 5000); // Hide after 5 seconds, adjust as needed
+                    clickCount = 0; // Reset counter after triggering easter egg
+
+                }
+            });
+
+
+            // Initial text typing animation start
+            typeText();
+
+            // Function to apply glitch effect (example - can be expanded)
+            function applyGlitchEffect(element) {
+                element.classList.add('glitch');
+                element.setAttribute('data-text', element.textContent); // Set data-text with current text
+            }
+
+            // Example usage - apply glitch to terminal text elements on hover (can be expanded)
+            const terminalElements = document.querySelectorAll('#terminal, #terminal-output, #terminal-input, .prefix, #input-text, #start-hack-btn');
+            terminalElements.forEach(element => {
+                element.addEventListener('mouseover', () => {
+                    if (!element.classList.contains('glitch')) { // To prevent re-applying if already glitched
+                        applyGlitchEffect(element);
+                    }
+                });
+                element.addEventListener('mouseout', () => {
+                    element.classList.remove('glitch'); // Optionally remove glitch on mouseout
+                });
+            });
+
+
+            // Fake Keyboard Input - Auto type hacker commands
+            inputTextElement.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault(); // Prevent default Enter key behavior in contenteditable
+                    // You can add actions to perform when "Enter" is pressed (optional)
+                    inputTextElement.textContent = ''; // Clear input after "Enter" (optional)
+                } else {
+                    // Simulate typing hacker commands
+                    const fakeCommands = ["scan network", "connect server", "bypass firewall", "access database", "download data", "run exploit", "encrypt data"];
+                    const randomCommand = fakeCommands[Math.floor(Math.random() * fakeCommands.length)];
+                    inputTextElement.textContent = randomCommand.substring(0, inputTextElement.textContent.length + 1); // Auto-fill one char at a time
+                     // Move cursor to the end of the text in contenteditable
+                     const range = document.createRange();
+                     range.selectNodeContents(inputTextElement);
+                     range.collapse(false); // Collapse to the end
+                     const selection = window.getSelection();
+                     selection.removeAllRanges();
+                     selection.addRange(range);
+
+                }
+            });
+
+
+            // Mouse Control Prank - Subtle cursor movement (adjust values for intensity)
+            document.addEventListener('mousemove', (event) => {
+                if (hackingProcessSection.classList.contains('hidden')) return; // Only apply during hacking process
+
+                const sensitivity = 0.01; // Adjust for sensitivity of movement
+                const offsetX = (Math.random() - 0.5) * 2 * sensitivity * window.innerWidth; // Random X offset
+                const offsetY = (Math.random() - 0.5) * 2 * sensitivity * window.innerHeight; // Random Y offset
+
+                // Apply slight random movement to the cursor - subtle effect
+                document.body.style.cursor = `url('cursor.png') ${offsetX} ${offsetY}, auto`; //You might need a custom cursor.png - or use default 'default'
+
+                //Reset to default cursor after a short delay - makes effect less jarring and more subtle.
+                clearTimeout(); //Clear any previous reset timeouts
+                setTimeout(() => {
+                    document.body.style.cursor = 'default'; // Reset to default cursor
+                }, 100); // Reset delay - quick reset for subtle effect
+
+
+            });
+
+
+            // Random System Beeps - Periodic beeps during hacking process
+            function startBeeping() {
+                if (hackingProcessSection.classList.contains('hidden')) return; // Beep only during hack
+
+                beepSound.play(); // Play beep sound
+
+                // Random interval for next beep - makes it sound less repetitive and more "system-like"
+                const beepInterval = Math.random() * (10000 - 3000) + 3000; // Random interval between 3 to 10 seconds
+                setTimeout(startBeeping, beepInterval); // Set timeout for next beep
+            }
+
+            // Start beeping when hacking process begins
+            startHackBtn.addEventListener('click', startBeeping); // Start beeping on hack start
+
+
+        });
+    </script>
+</body>
+</html>
